@@ -1,0 +1,4 @@
+import test from 'node:test';import assert from 'node:assert/strict';import {fresh,step} from './model.mjs';
+test('confirmation without a confirmed order cannot emit a purchase',()=>{const s=step(fresh(),'refresh');assert.equal(s.sent.length,0);assert.equal(s.rawEvents,0);});
+test('repeated submissions and revisits preserve one order and purchase',()=>{let s=step(fresh(),'submit');for(let i=0;i<100;i++){s=step(s,i%2?'back':'refresh');}assert.equal(Object.keys(s.orders).length,1);assert.equal(s.sent.length,1);assert.equal(s.rawEvents,101);assert.ok(s.rawOrders>1);});
+test('a genuinely new checkout counts independently after persisted state restoration',()=>{let s=step(fresh(),'submit');s=JSON.parse(JSON.stringify(s));s=step(s,'new');s=step(s,'refresh');assert.equal(s.sent.length,1);s=step(s,'submit');assert.equal(s.sent.length,2);assert.equal(Object.keys(s.orders).length,2);assert.notEqual(s.sent[0],s.sent[1]);});
